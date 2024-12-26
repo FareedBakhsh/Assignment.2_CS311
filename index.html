@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        #output {
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        form {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px auto;
+            width: 300px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        label {
+            display: block;
+            margin: 10px 0;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        button {
+            background: #28a745;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #218838;
+        }
+
+        button:active {
+            background: #1e7e34;
+        }
+
+        button:focus {
+            outline: none;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            text-align: left;
+            padding: 5px;
+            margin: 5px 0;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Employee Management System</h1>
+
+    <button onclick="displayEmployees()">Display All Employees</button>
+
+    <form id="addEmployeeForm">
+        <h2>Add New Employee</h2>
+        <label>ID: <input type="text" id="newId" required></label>
+        <label>Name: <input type="text" id="newName" required></label>
+        <label>Department: <input type="text" id="newDept" required></label>
+        <label>Salary: <input type="number" id="newSalary" required></label>
+        <button type="button" onclick="addEmployee()">Add Employee</button>
+    </form>
+
+    <form id="deleteEmployeeForm">
+        <h2>Delete Employee</h2>
+        <label>ID: <input type="text" id="deleteId" required></label>
+        <button type="button" onclick="deleteEmployee()">Delete Employee</button>
+    </form>
+
+    <div id="output"></div>
+
+    <script>
+        let xmlDoc;
+
+        // Load XML file
+        fetch('employees.xml')
+            .then(response => response.text())
+            .then(data => {
+                const parser = new DOMParser();
+                xmlDoc = parser.parseFromString(data, "application/xml");
+            })
+            .catch(error => console.error("Error loading XML:", error));
+
+        // Display all employees
+        function displayEmployees() {
+            const employees = xmlDoc.getElementsByTagName("Employee");
+            let output = "<h2>Employee List</h2><ul>";
+            for (let i = 0; i < employees.length; i++) {
+                const id = employees[i].getElementsByTagName("ID")[0].textContent;
+                const name = employees[i].getElementsByTagName("Name")[0].textContent;
+                const department = employees[i].getElementsByTagName("Department")[0].textContent;
+                const salary = employees[i].getElementsByTagName("Salary")[0].textContent;
+                output += `<li><strong>ID:</strong> ${id}, <strong>Name:</strong> ${name}, <strong>Department:</strong> ${department}, <strong>Salary:</strong> ${salary}</li>`;
+            }
+            output += "</ul>";
+            document.getElementById("output").innerHTML = output;
+        }
+
+        // Add a new employee
+        function addEmployee() {
+            const id = document.getElementById("newId").value;
+            const name = document.getElementById("newName").value;
+            const dept = document.getElementById("newDept").value;
+            const salary = document.getElementById("newSalary").value;
+
+            const newEmployee = xmlDoc.createElement("Employee");
+            const newId = xmlDoc.createElement("ID");
+            newId.textContent = id;
+            const newName = xmlDoc.createElement("Name");
+            newName.textContent = name;
+            const newDept = xmlDoc.createElement("Department");
+            newDept.textContent = dept;
+            const newSalary = xmlDoc.createElement("Salary");
+            newSalary.textContent = salary;
+
+            newEmployee.appendChild(newId);
+            newEmployee.appendChild(newName);
+            newEmployee.appendChild(newDept);
+            newEmployee.appendChild(newSalary);
+
+            xmlDoc.getElementsByTagName("Employees")[0].appendChild(newEmployee);
+            alert("Employee added successfully!");
+            displayEmployees();
+        }
+
+        // Delete an employee
+        function deleteEmployee() {
+            const id = document.getElementById("deleteId").value;
+            const employees = xmlDoc.getElementsByTagName("Employee");
+            let found = false;
+
+            for (let i = 0; i < employees.length; i++) {
+                const empId = employees[i].getElementsByTagName("ID")[0].textContent;
+                if (empId === id) {
+                    employees[i].parentNode.removeChild(employees[i]);
+                    found = true;
+                    alert("Employee deleted successfully!");
+                    displayEmployees();
+                    break;
+                }
+            }
+
+            if (!found) {
+                alert("Employee not found!");
+            }
+        }
+    </script>
+</body>
+</html>
